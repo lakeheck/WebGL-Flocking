@@ -92,15 +92,15 @@ class BirdGeometry extends THREE.BufferGeometry {
 
             references.array[ v * 2 ] = x;
             references.array[ v * 2 + 1 ] = y;
-
+            
             birdVertex.array[ v ] = v % 9;
-
+            
         }
-
+        
         this.scale( 0.2, 0.2, 0.2 );
-
+        
     }
-
+    
 }
 
 //
@@ -122,6 +122,8 @@ let positionVariable;
 let positionUniforms;
 let velocityUniforms;
 let birdUniforms;
+
+let renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
 
 init();
 animate();
@@ -325,7 +327,7 @@ function onPointerMove( event ) {
 
     mouseX = event.clientX - windowHalfX;
     mouseY = event.clientY - windowHalfY;
-
+    
 }
 
 //
@@ -339,30 +341,39 @@ function animate() {
 
 }
 
-function render() {
 
+
+function render() {
+    
     const now = performance.now();
     let delta = ( now - last ) / 1000;
-
+    
     if ( delta > 1 ) delta = 1; // safety cap on large deltas
     last = now;
-
+    
     positionUniforms[ 'time' ].value = now;
     positionUniforms[ 'delta' ].value = delta;
     velocityUniforms[ 'time' ].value = now;
     velocityUniforms[ 'delta' ].value = delta;
     birdUniforms[ 'time' ].value = now;
     birdUniforms[ 'delta' ].value = delta;
-
+    
     velocityUniforms[ 'predator' ].value.set( 0.5 * mouseX / windowHalfX, - 0.5 * mouseY / windowHalfY, 0 );
-
+    
     mouseX = 10000;
     mouseY = 10000;
-
+    
     gpuCompute.compute();
 
     birdUniforms[ 'texturePosition' ].value = gpuCompute.getCurrentRenderTarget( positionVariable ).texture;
     birdUniforms[ 'textureVelocity' ].value = gpuCompute.getCurrentRenderTarget( velocityVariable ).texture;
+    
+
+    //TODO - package up the scene as a module that can be imported and return a texture of the scene with some easy to configure paraemters 
+    //below, for rendering to a scene 
+    // renderer.setRenderTarget( renderTarget );
+    // renderer.render( scene, camera );
+    // renderer.setRenderTarget( null );
 
     renderer.render( scene, camera );
 
