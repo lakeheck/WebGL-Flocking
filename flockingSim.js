@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 
-import Stats from 'stats';
+import Stats from 'stats'; //a small clickable div to display frame rate in the corner 
 import { GUI } from 'gui';
 
 import { GPUComputationRenderer } from 'compute';
 
 /* TEXTURE WIDTH FOR SIMULATION */
-const WIDTH = 32;
+const WIDTH = 200;
 
 const BIRDS = WIDTH * WIDTH;
 
@@ -131,7 +131,7 @@ function init() {
     container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 3000 );
+    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 150, 3000 );
     camera.position.z = 350;
 
     scene = new THREE.Scene();
@@ -145,8 +145,10 @@ function init() {
 
     initComputeRenderer();
 
-    stats = new Stats();
-    container.appendChild( stats.dom );
+
+    //display frame rate in corner 
+    // stats = new Stats();
+    // container.appendChild( stats.dom );
 
     container.style.touchAction = 'none';
     container.addEventListener( 'pointermove', onPointerMove );

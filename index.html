@@ -18,7 +18,7 @@
 	<body>
 
 		<div id="info">
-			<a href="http://www.lakeheckaman.com" target="_blank" rel="noopener">lake heckaman</a> - webgl flocking simulation<br/>
+			<a href="http://www.lakeheckaman.com" target="_blank" rel="noopener">by lake heckaman</a><br/>
 			move mouse to interact
 		</div>
 
@@ -123,7 +123,7 @@
 				if ( dist < preyRadius ) {
 
 					f = ( distSquared / preyRadiusSq - 1.0 ) * delta * 100.;
-					velocity += normalize( dir ) * f;
+					velocity -= normalize( dir ) * f;
 					limit += 5.0;
 				}
 
@@ -208,6 +208,7 @@
 
 		</script>
 
+        
 		<script type="x-shader/x-vertex" id="birdVS">
 
 			attribute vec2 reference;
@@ -226,14 +227,14 @@
 			void main() {
 
 				vec4 tmpPos = texture2D( texturePosition, reference );
-				vec3 pos = tmpPos.xyz;
+				vec3 pos = vec3(tmpPos.xy,0);
 				vec3 velocity = normalize(texture2D( textureVelocity, reference ).xyz);
 
 				vec3 newPosition = position;
 
 				if ( birdVertex == 4.0 || birdVertex == 7.0 ) {
 					// flap wings
-					newPosition.y = sin( tmpPos.w ) * 5.;
+					newPosition.y = sin( tmpPos.w ) * 2.;
 				}
 
 				newPosition = mat3( modelMatrix ) * newPosition;
