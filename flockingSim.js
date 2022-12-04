@@ -328,10 +328,10 @@ function setupPost() {
 		varying vec2 vUv;
 		void main() {
 			gl_FragColor = texture2D( tDiffuse, vUv );
-			gl_FragColor.a *= opacity;
+			gl_FragColor *= opacity;
 		}`,
         uniforms: {
-            opacity: { value: 0.05 },
+            opacity: { value: 0.5 },
             tDiffuse: { value: null }
         }
     } );
@@ -2576,7 +2576,7 @@ function animate() {
     
 
     // render scene into target
-    renderer.setRenderTarget( target );
+    renderer.setRenderTarget( tar get );
     renderer.render( scene, camera );
 
     // render post FX
