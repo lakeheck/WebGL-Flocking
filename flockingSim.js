@@ -46,7 +46,7 @@ class BirdGeometry extends THREE.BufferGeometry {
 
         }
 
-        const wingsSpan = 20;
+        const wingsSpan = 10;
 
         for ( let f = 0; f < BIRDS; f ++ ) {
 
@@ -122,8 +122,10 @@ let positionVariable;
 let positionUniforms;
 let velocityUniforms;
 let birdUniforms;
+let postScene, postCamera, postMaterial;
 
 let renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
+let target = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
 
 init();
 animate();
@@ -141,6 +143,8 @@ function init() {
     scene.fog = new THREE.Fog( 0xffffff, 100, 1000 );
 
     renderer = new THREE.WebGLRenderer();
+    // const composer = new THREE.EffectComposer(renderer);
+    // console.log(composer);
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     container.appendChild( renderer.domElement );
@@ -149,13 +153,15 @@ function init() {
 
 
     //display frame rate in corner 
-    // stats = new Stats();
-    // container.appendChild( stats.dom );
+    stats = new Stats();
+    container.appendChild( stats.dom );
 
     container.style.touchAction = 'none';
     container.addEventListener( 'pointermove', onPointerMove );
 
     //
+
+    setupPost();
 
     window.addEventListener( 'resize', onWindowResize );
 
@@ -186,6 +192,37 @@ function init() {
     gui.close();
 
     initBirds();
+
+}
+
+function setupPost() {
+
+    // Setup post processing stage
+    postCamera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0, 1 );
+    postMaterial = new THREE.ShaderMaterial( {
+        vertexShader: `varying vec2 vUv;
+
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+        fragmentShader: `
+		uniform float opacity;
+		uniform sampler2D tDiffuse;
+		varying vec2 vUv;
+		void main() {
+			gl_FragColor = texture2D( tDiffuse, vUv );
+			gl_FragColor.a *= opacity;
+		}`,
+        uniforms: {
+            opacity: { value: 0.05 },
+            tDiffuse: { value: null }
+        }
+    } );
+    const postPlane = new THREE.PlaneGeometry( 2, 2 );
+    const postQuad = new THREE.Mesh( postPlane, postMaterial );
+    postScene = new THREE.Scene();
+    postScene.add( postQuad );
 
 }
 
@@ -336,14 +373,6 @@ function animate() {
 
     requestAnimationFrame( animate );
 
-    render();
-    stats.update();
-
-}
-
-
-
-function render() {
     
     const now = performance.now();
     let delta = ( now - last ) / 1000;
@@ -369,12 +398,24 @@ function render() {
     birdUniforms[ 'textureVelocity' ].value = gpuCompute.getCurrentRenderTarget( velocityVariable ).texture;
     
 
+    // render scene into target
+    renderer.setRenderTarget( target );
+    renderer.render( scene, camera );
+
+    // render post FX
+    postMaterial.uniforms.tDiffuse.value = target.texture;
+
+
+    renderer.setRenderTarget( null );
+    renderer.render( postScene, postCamera );
+
+
     //TODO - package up the scene as a module that can be imported and return a texture of the scene with some easy to configure paraemters 
     //below, for rendering to a scene 
     // renderer.setRenderTarget( renderTarget );
     // renderer.render( scene, camera );
     // renderer.setRenderTarget( null );
 
-    renderer.render( scene, camera );
+    // renderer.render( scene, camera );
 
 }
