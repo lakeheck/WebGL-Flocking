@@ -1767,51 +1767,7 @@ function CHECK_FRAMEBUFFER_STATUS () {
 
 
 
-// FULL SIMULATION ANIMATION LOOP 
 
-function animate() {
-
-    requestAnimationFrame( animate );
-
-    
-    const now = performance.now();
-    let delta = ( now - last ) / 1000;
-    
-    if ( delta > 1 ) delta = 1; // safety cap on large deltas
-    last = now;
-    
-    positionUniforms[ 'time' ].value = now;
-    positionUniforms[ 'delta' ].value = delta;
-    velocityUniforms[ 'time' ].value = now;
-    velocityUniforms[ 'delta' ].value = delta;
-    birdUniforms[ 'time' ].value = now;
-    birdUniforms[ 'delta' ].value = delta;
-    
-    velocityUniforms[ 'predator' ].value.set( 0.5 * mouseX / windowHalfX, - 0.5 * mouseY / windowHalfY, 0 );
-    
-    mouseX = 10000;
-    mouseY = 10000;
-    
-    gpuCompute.compute();
-
-    birdUniforms[ 'texturePosition' ].value = gpuCompute.getCurrentRenderTarget( positionVariable ).texture;
-    birdUniforms[ 'textureVelocity' ].value = gpuCompute.getCurrentRenderTarget( velocityVariable ).texture;
-    
-
-    // render scene into target
-    renderer.setRenderTarget( target );
-    renderer.render( scene, camera );
-
-    // render post FX
-    postMaterial.uniforms.tDiffuse.value = target.texture;
-
-
-    renderer.setRenderTarget( null );
-    renderer.render( postScene, postCamera );
-
-    stats.update();
-
-}
 
 function initFramebuffers () {
     let simRes = getResolution(config.SIM_RESOLUTION);//getResolution basically just applies view aspect ratio to the passed resolution 
@@ -2017,11 +1973,11 @@ function update () {
     const dt = calcDeltaTime();
     noiseSeed += dt * config.NOISE_TRANSLATE_SPEED;
     if (resizeCanvas()) //resize if needed 
-        initFramebuffers();
+    initFramebuffers();
     updateColors(dt); //step through our sim 
     applyInputs(); //take from ui
     if (!config.PAUSED)
-        step(dt); //do a calculation step 
+    step(dt); //do a calculation step 
     render(null);
     requestAnimationFrame(update);
 }
@@ -2073,117 +2029,117 @@ function applyInputs () {
 
 
 //the simulation, finally! 
-function step (dt) {
-    gl.disable(gl.BLEND);
-    noiseProgram.bind();
-    gl.uniform1f(noiseProgram.uniforms.uPeriod, config.PERIOD); 
-    gl.uniform3f(noiseProgram.uniforms.uTranslate, 0.0, 0.0, 0.0);
-    gl.uniform1f(noiseProgram.uniforms.uAmplitude, config.AMP); 
-    gl.uniform1f(noiseProgram.uniforms.uSeed, noiseSeed); 
-    gl.uniform1f(noiseProgram.uniforms.uExponent, config.EXPONENT); 
-    gl.uniform1f(noiseProgram.uniforms.uRidgeThreshold, config.RIDGE); 
-    gl.uniform1f(noiseProgram.uniforms.uLacunarity, config.LACUNARITY); 
-    gl.uniform1f(noiseProgram.uniforms.uGain, config.GAIN); 
-    gl.uniform1f(noiseProgram.uniforms.uOctaves, config.OCTAVES); 
-    gl.uniform3f(noiseProgram.uniforms.uScale, 1., 1., 1.); 
-    gl.uniform1f(noiseProgram.uniforms.uAspect, config.ASPECT); 
-    blit(noise.write);
-    noise.swap();
+// function step (dt) {
+//     gl.disable(gl.BLEND);
+//     noiseProgram.bind();
+//     gl.uniform1f(noiseProgram.uniforms.uPeriod, config.PERIOD); 
+//     gl.uniform3f(noiseProgram.uniforms.uTranslate, 0.0, 0.0, 0.0);
+//     gl.uniform1f(noiseProgram.uniforms.uAmplitude, config.AMP); 
+//     gl.uniform1f(noiseProgram.uniforms.uSeed, noiseSeed); 
+//     gl.uniform1f(noiseProgram.uniforms.uExponent, config.EXPONENT); 
+//     gl.uniform1f(noiseProgram.uniforms.uRidgeThreshold, config.RIDGE); 
+//     gl.uniform1f(noiseProgram.uniforms.uLacunarity, config.LACUNARITY); 
+//     gl.uniform1f(noiseProgram.uniforms.uGain, config.GAIN); 
+//     gl.uniform1f(noiseProgram.uniforms.uOctaves, config.OCTAVES); 
+//     gl.uniform3f(noiseProgram.uniforms.uScale, 1., 1., 1.); 
+//     gl.uniform1f(noiseProgram.uniforms.uAspect, config.ASPECT); 
+//     blit(noise.write);
+//     noise.swap();
 
-    curlProgram.bind();
-    gl.uniform2f(curlProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
-    gl.uniform1i(curlProgram.uniforms.uVelocity, velocity.read.attach(0));
-    blit(curl);
+//     curlProgram.bind();
+//     gl.uniform2f(curlProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+//     gl.uniform1i(curlProgram.uniforms.uVelocity, velocity.read.attach(0));
+//     blit(curl);
     
-    vorticityProgram.bind();
-    gl.uniform2f(vorticityProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
-    gl.uniform1i(vorticityProgram.uniforms.uVelocity, velocity.read.attach(0));
-    gl.uniform1i(vorticityProgram.uniforms.uCurl, curl.attach(1));
-    gl.uniform1f(vorticityProgram.uniforms.curl, config.CURL);
-    gl.uniform1f(vorticityProgram.uniforms.dt, dt);
-    blit(velocity.write);
-    velocity.swap();
+//     vorticityProgram.bind();
+//     gl.uniform2f(vorticityProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+//     gl.uniform1i(vorticityProgram.uniforms.uVelocity, velocity.read.attach(0));
+//     gl.uniform1i(vorticityProgram.uniforms.uCurl, curl.attach(1));
+//     gl.uniform1f(vorticityProgram.uniforms.curl, config.CURL);
+//     gl.uniform1f(vorticityProgram.uniforms.dt, dt);
+//     blit(velocity.write);
+//     velocity.swap();
     
-    divergenceProgram.bind();
-    gl.uniform2f(divergenceProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
-    gl.uniform1i(divergenceProgram.uniforms.uVelocity, velocity.read.attach(0));
-    blit(divergence);
+//     divergenceProgram.bind();
+//     gl.uniform2f(divergenceProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+//     gl.uniform1i(divergenceProgram.uniforms.uVelocity, velocity.read.attach(0));
+//     blit(divergence);
     
-    clearProgram.bind();
-    gl.uniform1i(clearProgram.uniforms.uTexture, pressure.read.attach(0));
-    gl.uniform1f(clearProgram.uniforms.value, config.PRESSURE);
-    blit(pressure.write);
-    pressure.swap();
+//     clearProgram.bind();
+//     gl.uniform1i(clearProgram.uniforms.uTexture, pressure.read.attach(0));
+//     gl.uniform1f(clearProgram.uniforms.value, config.PRESSURE);
+//     blit(pressure.write);
+//     pressure.swap();
     
-    pressureProgram.bind();
-    gl.uniform2f(pressureProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
-    gl.uniform1i(pressureProgram.uniforms.uDivergence, divergence.attach(0));
-    for (let i = 0; i < config.PRESSURE_ITERATIONS; i++) {
-        gl.uniform1i(pressureProgram.uniforms.uPressure, pressure.read.attach(1));
-        blit(pressure.write);
-        pressure.swap();
-    }
+//     pressureProgram.bind();
+//     gl.uniform2f(pressureProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+//     gl.uniform1i(pressureProgram.uniforms.uDivergence, divergence.attach(0));
+//     for (let i = 0; i < config.PRESSURE_ITERATIONS; i++) {
+//         gl.uniform1i(pressureProgram.uniforms.uPressure, pressure.read.attach(1));
+//         blit(pressure.write);
+//         pressure.swap();
+//     }
     
-    gradientSubtractProgram.bind();
-    gl.uniform2f(gradientSubtractProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
-    gl.uniform1i(gradientSubtractProgram.uniforms.uPressure, pressure.read.attach(0));
-    gl.uniform1i(gradientSubtractProgram.uniforms.uVelocity, velocity.read.attach(1));
-    blit(velocity.write);
-    velocity.swap();
+//     gradientSubtractProgram.bind();
+//     gl.uniform2f(gradientSubtractProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+//     gl.uniform1i(gradientSubtractProgram.uniforms.uPressure, pressure.read.attach(0));
+//     gl.uniform1i(gradientSubtractProgram.uniforms.uVelocity, velocity.read.attach(1));
+//     blit(velocity.write);
+//     velocity.swap();
 
-    if(config.FORCE_MAP_ENABLE){
-        splatVelProgram.bind();
-        gl.uniform1i(splatVelProgram.uniforms.uTarget, velocity.read.attach(0)); 
-        // gl.uniform1i(splatVelProgram.uniforms.uTarget, velocity.read.attach(0));
+//     if(config.FORCE_MAP_ENABLE){
+//         splatVelProgram.bind();
+//         gl.uniform1i(splatVelProgram.uniforms.uTarget, velocity.read.attach(0)); 
+//         // gl.uniform1i(splatVelProgram.uniforms.uTarget, velocity.read.attach(0));
 
-        gl.activeTexture(gl.TEXTURE0 + 1);
-        gl.bindTexture(gl.TEXTURE_2D, picture.texture);
-        gl.uniform1i(splatVelProgram.uniforms.uDensityMap, picture.texture); //density map
-        gl.uniform1i(splatVelProgram.uniforms.uForceMap, noise.read.attach(2)); //add noise for velocity map 
-        gl.uniform1f(splatVelProgram.uniforms.aspectRatio, canvas.width / canvas.height);
-        gl.uniform1f(splatVelProgram.uniforms.uVelocityScale, config.VELOCITYSCALE);
-        gl.uniform2f(splatVelProgram.uniforms.point, 0, 0);
-        gl.uniform3f(splatVelProgram.uniforms.color, 0, 0, 1);
-        gl.uniform1i(splatVelProgram.uniforms.uClick, 0);
-        gl.uniform1f(splatVelProgram.uniforms.radius, correctRadius(config.SPLAT_RADIUS / 100.0));
-        blit(velocity.write);
-        velocity.swap();
-    }
+//         gl.activeTexture(gl.TEXTURE0 + 1);
+//         gl.bindTexture(gl.TEXTURE_2D, picture.texture);
+//         gl.uniform1i(splatVelProgram.uniforms.uDensityMap, picture.texture); //density map
+//         gl.uniform1i(splatVelProgram.uniforms.uForceMap, noise.read.attach(2)); //add noise for velocity map 
+//         gl.uniform1f(splatVelProgram.uniforms.aspectRatio, canvas.width / canvas.height);
+//         gl.uniform1f(splatVelProgram.uniforms.uVelocityScale, config.VELOCITYSCALE);
+//         gl.uniform2f(splatVelProgram.uniforms.point, 0, 0);
+//         gl.uniform3f(splatVelProgram.uniforms.color, 0, 0, 1);
+//         gl.uniform1i(splatVelProgram.uniforms.uClick, 0);
+//         gl.uniform1f(splatVelProgram.uniforms.radius, correctRadius(config.SPLAT_RADIUS / 100.0));
+//         blit(velocity.write);
+//         velocity.swap();
+//     }
 
-    if(config.DENSITY_MAP_ENABLE){
-        splatColorProgram.bind();
-        gl.uniform1f(splatColorProgram.uniforms.uFlow, config.FLOW);
-        gl.uniform1f(splatColorProgram.uniforms.aspectRatio, canvas.width / canvas.height);
-        gl.uniform2f(splatColorProgram.uniforms.point, 0, 0);
-        gl.uniform1i(splatColorProgram.uniforms.uTarget, dye.read.attach(0));
-        gl.uniform1i(splatColorProgram.uniforms.uColor, picture.attach(1)); //color map
-        gl.uniform1i(splatColorProgram.uniforms.uDensityMap, picture.attach(2)); //density map
-        gl.uniform1i(splatVelProgram.uniforms.uClick, 0);
-        gl.uniform1f(splatColorProgram.uniforms.radius, correctRadius(config.SPLAT_RADIUS / 100.0));
-        blit(dye.write);
-        dye.swap();
-    }
+//     if(config.DENSITY_MAP_ENABLE){
+//         splatColorProgram.bind();
+//         gl.uniform1f(splatColorProgram.uniforms.uFlow, config.FLOW);
+//         gl.uniform1f(splatColorProgram.uniforms.aspectRatio, canvas.width / canvas.height);
+//         gl.uniform2f(splatColorProgram.uniforms.point, 0, 0);
+//         gl.uniform1i(splatColorProgram.uniforms.uTarget, dye.read.attach(0));
+//         gl.uniform1i(splatColorProgram.uniforms.uColor, picture.attach(1)); //color map
+//         gl.uniform1i(splatColorProgram.uniforms.uDensityMap, picture.attach(2)); //density map
+//         gl.uniform1i(splatVelProgram.uniforms.uClick, 0);
+//         gl.uniform1f(splatColorProgram.uniforms.radius, correctRadius(config.SPLAT_RADIUS / 100.0));
+//         blit(dye.write);
+//         dye.swap();
+//     }
     
-    advectionProgram.bind();
-    gl.uniform2f(advectionProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
-    if (!ext.supportLinearFiltering)
-    gl.uniform2f(advectionProgram.uniforms.dyeTexelSize, velocity.texelSizeX, velocity.texelSizeY);
-    let velocityId = velocity.read.attach(0);
-    gl.uniform1i(advectionProgram.uniforms.uVelocity, velocityId);
-    gl.uniform1i(advectionProgram.uniforms.uSource, velocityId);
-    gl.uniform1f(advectionProgram.uniforms.dt, dt);
-    gl.uniform1f(advectionProgram.uniforms.dissipation, config.VELOCITY_DISSIPATION);
-    blit(velocity.write);
-    velocity.swap();
+//     advectionProgram.bind();
+//     gl.uniform2f(advectionProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+//     if (!ext.supportLinearFiltering)
+//     gl.uniform2f(advectionProgram.uniforms.dyeTexelSize, velocity.texelSizeX, velocity.texelSizeY);
+//     let velocityId = velocity.read.attach(0);
+//     gl.uniform1i(advectionProgram.uniforms.uVelocity, velocityId);
+//     gl.uniform1i(advectionProgram.uniforms.uSource, velocityId);
+//     gl.uniform1f(advectionProgram.uniforms.dt, dt);
+//     gl.uniform1f(advectionProgram.uniforms.dissipation, config.VELOCITY_DISSIPATION);
+//     blit(velocity.write);
+//     velocity.swap();
     
-    if (!ext.supportLinearFiltering)
-        gl.uniform2f(advectionProgram.uniforms.dyeTexelSize, dye.texelSizeX, dye.texelSizeY);
-        gl.uniform1i(advectionProgram.uniforms.uVelocity, velocity.read.attach(0));
-        gl.uniform1i(advectionProgram.uniforms.uSource, dye.read.attach(1));
-        gl.uniform1f(advectionProgram.uniforms.dissipation, config.DENSITY_DISSIPATION);
-        blit(dye.write);
-    dye.swap();
-}
+//     if (!ext.supportLinearFiltering)
+//         gl.uniform2f(advectionProgram.uniforms.dyeTexelSize, dye.texelSizeX, dye.texelSizeY);
+//         gl.uniform1i(advectionProgram.uniforms.uVelocity, velocity.read.attach(0));
+//         gl.uniform1i(advectionProgram.uniforms.uSource, dye.read.attach(1));
+//         gl.uniform1f(advectionProgram.uniforms.dissipation, config.DENSITY_DISSIPATION);
+//         blit(dye.write);
+//     dye.swap();
+// }
 
 function render (target) {
     if (config.BLOOM)
@@ -2588,12 +2544,179 @@ const noiseProgram              = new Program(baseVertexShader, noiseShader); //
 //this also allows us to only use the active uniforms 
 const displayMaterial = new Material(baseVertexShader, displayShaderSource);
 
+// FULL SIMULATION ANIMATION LOOP 
 
-updateKeywords();
-initFramebuffers();
-multipleSplats(parseInt(Math.random() * 20) + 5);
-update();
+function animate() {
 
-startGUI();
-init();
-animate();
+    requestAnimationFrame( animate );
+
+    
+    const now = performance.now();
+    let delta = ( now - last ) / 1000;
+    
+    if ( delta > 1 ) delta = 1; // safety cap on large deltas
+    last = now;
+    
+    positionUniforms[ 'time' ].value = now;
+    positionUniforms[ 'delta' ].value = delta;
+    velocityUniforms[ 'time' ].value = now;
+    velocityUniforms[ 'delta' ].value = delta;
+    birdUniforms[ 'time' ].value = now;
+    birdUniforms[ 'delta' ].value = delta;
+    
+    velocityUniforms[ 'predator' ].value.set( 0.5 * mouseX / windowHalfX, - 0.5 * mouseY / windowHalfY, 0 );
+    
+    mouseX = 10000;
+    mouseY = 10000;
+    
+    gpuCompute.compute();
+
+    birdUniforms[ 'texturePosition' ].value = gpuCompute.getCurrentRenderTarget( positionVariable ).texture;
+    birdUniforms[ 'textureVelocity' ].value = gpuCompute.getCurrentRenderTarget( velocityVariable ).texture;
+    
+
+    // render scene into target
+    renderer.setRenderTarget( target );
+    renderer.render( scene, camera );
+
+    // render post FX
+    postMaterial.uniforms.tDiffuse.value = target.texture;
+
+
+    renderer.setRenderTarget( null );
+    renderer.render( postScene, postCamera );
+
+    //fluid rendering
+
+
+    const dt = calcDeltaTime();
+    noiseSeed += dt * config.NOISE_TRANSLATE_SPEED;
+    if (resizeCanvas()) //resize if needed 
+        initFramebuffers();
+    updateColors(dt); //step through our sim 
+    applyInputs(); //take from ui
+    if (!config.PAUSED){
+        gl.disable(gl.BLEND);
+        noiseProgram.bind();
+        gl.uniform1f(noiseProgram.uniforms.uPeriod, config.PERIOD); 
+        gl.uniform3f(noiseProgram.uniforms.uTranslate, 0.0, 0.0, 0.0);
+        gl.uniform1f(noiseProgram.uniforms.uAmplitude, config.AMP); 
+        gl.uniform1f(noiseProgram.uniforms.uSeed, noiseSeed); 
+        gl.uniform1f(noiseProgram.uniforms.uExponent, config.EXPONENT); 
+        gl.uniform1f(noiseProgram.uniforms.uRidgeThreshold, config.RIDGE); 
+        gl.uniform1f(noiseProgram.uniforms.uLacunarity, config.LACUNARITY); 
+        gl.uniform1f(noiseProgram.uniforms.uGain, config.GAIN); 
+        gl.uniform1f(noiseProgram.uniforms.uOctaves, config.OCTAVES); 
+        gl.uniform3f(noiseProgram.uniforms.uScale, 1., 1., 1.); 
+        gl.uniform1f(noiseProgram.uniforms.uAspect, config.ASPECT); 
+        blit(noise.write);
+        noise.swap();
+    
+        curlProgram.bind();
+        gl.uniform2f(curlProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        gl.uniform1i(curlProgram.uniforms.uVelocity, velocity.read.attach(0));
+        blit(curl);
+        
+        vorticityProgram.bind();
+        gl.uniform2f(vorticityProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        gl.uniform1i(vorticityProgram.uniforms.uVelocity, velocity.read.attach(0));
+        gl.uniform1i(vorticityProgram.uniforms.uCurl, curl.attach(1));
+        gl.uniform1f(vorticityProgram.uniforms.curl, config.CURL);
+        gl.uniform1f(vorticityProgram.uniforms.dt, dt);
+        blit(velocity.write);
+        velocity.swap();
+        
+        divergenceProgram.bind();
+        gl.uniform2f(divergenceProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        gl.uniform1i(divergenceProgram.uniforms.uVelocity, velocity.read.attach(0));
+        blit(divergence);
+        
+        clearProgram.bind();
+        gl.uniform1i(clearProgram.uniforms.uTexture, pressure.read.attach(0));
+        gl.uniform1f(clearProgram.uniforms.value, config.PRESSURE);
+        blit(pressure.write);
+        pressure.swap();
+        
+        pressureProgram.bind();
+        gl.uniform2f(pressureProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        gl.uniform1i(pressureProgram.uniforms.uDivergence, divergence.attach(0));
+        for (let i = 0; i < config.PRESSURE_ITERATIONS; i++) {
+            gl.uniform1i(pressureProgram.uniforms.uPressure, pressure.read.attach(1));
+            blit(pressure.write);
+            pressure.swap();
+        }
+        
+        gradientSubtractProgram.bind();
+        gl.uniform2f(gradientSubtractProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        gl.uniform1i(gradientSubtractProgram.uniforms.uPressure, pressure.read.attach(0));
+        gl.uniform1i(gradientSubtractProgram.uniforms.uVelocity, velocity.read.attach(1));
+        blit(velocity.write);
+        velocity.swap();
+    
+        if(config.FORCE_MAP_ENABLE){
+            splatVelProgram.bind();
+            gl.uniform1i(splatVelProgram.uniforms.uTarget, velocity.read.attach(0)); 
+            // gl.uniform1i(splatVelProgram.uniforms.uTarget, velocity.read.attach(0));
+    
+            gl.activeTexture(gl.TEXTURE0 + 1);
+            gl.bindTexture(gl.TEXTURE_2D, picture.texture);
+            gl.uniform1i(splatVelProgram.uniforms.uDensityMap, picture.texture); //density map
+            gl.uniform1i(splatVelProgram.uniforms.uForceMap, noise.read.attach(2)); //add noise for velocity map 
+            gl.uniform1f(splatVelProgram.uniforms.aspectRatio, canvas.width / canvas.height);
+            gl.uniform1f(splatVelProgram.uniforms.uVelocityScale, config.VELOCITYSCALE);
+            gl.uniform2f(splatVelProgram.uniforms.point, 0, 0);
+            gl.uniform3f(splatVelProgram.uniforms.color, 0, 0, 1);
+            gl.uniform1i(splatVelProgram.uniforms.uClick, 0);
+            gl.uniform1f(splatVelProgram.uniforms.radius, correctRadius(config.SPLAT_RADIUS / 100.0));
+            blit(velocity.write);
+            velocity.swap();
+        }
+    
+        if(config.DENSITY_MAP_ENABLE){
+            splatColorProgram.bind();
+            gl.uniform1f(splatColorProgram.uniforms.uFlow, config.FLOW);
+            gl.uniform1f(splatColorProgram.uniforms.aspectRatio, canvas.width / canvas.height);
+            gl.uniform2f(splatColorProgram.uniforms.point, 0, 0);
+            gl.uniform1i(splatColorProgram.uniforms.uTarget, dye.read.attach(0));
+            gl.uniform1i(splatColorProgram.uniforms.uColor, picture.attach(1)); //color map
+            gl.uniform1i(splatColorProgram.uniforms.uDensityMap, picture.attach(2)); //density map
+            gl.uniform1i(splatVelProgram.uniforms.uClick, 0);
+            gl.uniform1f(splatColorProgram.uniforms.radius, correctRadius(config.SPLAT_RADIUS / 100.0));
+            blit(dye.write);
+            dye.swap();
+        }
+        
+        advectionProgram.bind();
+        gl.uniform2f(advectionProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        if (!ext.supportLinearFiltering)
+        gl.uniform2f(advectionProgram.uniforms.dyeTexelSize, velocity.texelSizeX, velocity.texelSizeY);
+        let velocityId = velocity.read.attach(0);
+        gl.uniform1i(advectionProgram.uniforms.uVelocity, velocityId);
+        gl.uniform1i(advectionProgram.uniforms.uSource, velocityId);
+        gl.uniform1f(advectionProgram.uniforms.dt, dt);
+        gl.uniform1f(advectionProgram.uniforms.dissipation, config.VELOCITY_DISSIPATION);
+        blit(velocity.write);
+        velocity.swap();
+        
+        if (!ext.supportLinearFiltering)
+            gl.uniform2f(advectionProgram.uniforms.dyeTexelSize, dye.texelSizeX, dye.texelSizeY);
+            gl.uniform1i(advectionProgram.uniforms.uVelocity, velocity.read.attach(0));
+            gl.uniform1i(advectionProgram.uniforms.uSource, dye.read.attach(1));
+            gl.uniform1f(advectionProgram.uniforms.dissipation, config.DENSITY_DISSIPATION);
+            blit(dye.write);
+        dye.swap();
+    } 
+    render(null);
+
+    stats.update();
+
+}
+
+startGUI(); //start fluid gui
+
+updateKeywords(); //update fluid kwargs
+initFramebuffers(); //init fluid buffers 
+multipleSplats(parseInt(Math.random() * 20) + 5); //create some splates
+
+init(); //init flocking 
+animate(); //full sim update step
