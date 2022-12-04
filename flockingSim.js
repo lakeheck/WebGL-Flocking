@@ -2576,7 +2576,7 @@ function animate() {
     
 
     // render scene into target
-    renderer.setRenderTarget( tar get );
+    renderer.setRenderTarget( target );
     renderer.render( scene, camera );
 
     // render post FX
