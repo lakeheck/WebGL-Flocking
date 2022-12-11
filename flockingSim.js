@@ -6,7 +6,7 @@ import { GUI } from 'gui';
 import { GPUComputationRenderer } from 'compute';
 
 /* TEXTURE WIDTH FOR SIMULATION */
-const WIDTH = 200;
+const WIDTH = 100;
 
 const BIRDS = WIDTH * WIDTH;
 
@@ -149,8 +149,8 @@ function init() {
 
 
     //display frame rate in corner 
-    // stats = new Stats();
-    // container.appendChild( stats.dom );
+    stats = new Stats();
+    container.appendChild( stats.dom );
 
     container.style.touchAction = 'none';
     container.addEventListener( 'pointermove', onPointerMove );
