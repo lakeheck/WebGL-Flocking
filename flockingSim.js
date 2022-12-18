@@ -221,8 +221,8 @@ function initComputeRenderer() {
     velocityUniforms[ 'separationDistance' ] = { value: 1.0 };
     velocityUniforms[ 'alignmentDistance' ] = { value: 1.0 };
     velocityUniforms[ 'cohesionDistance' ] = { value: 1.0 };
-    velocityUniforms[ 'freedomFactor' ] = { value: 1.0 };
-    velocityUniforms[ 'predator' ] = { value: new THREE.Vector3() };
+    velocityUniforms[ 'freedomFactor' ] = { value: 10.0 };
+    velocityUniforms[ 'target' ] = { value: new THREE.Vector3() };
     velocityVariable.material.defines.BOUNDS = BOUNDS.toFixed( 2 );
 
     velocityVariable.wrapS = THREE.RepeatWrapping;
@@ -327,6 +327,7 @@ function onPointerMove( event ) {
 
     mouseX = event.clientX - windowHalfX;
     mouseY = event.clientY - windowHalfY;
+    console.log(mouseX,mouseY);
     
 }
 
@@ -335,7 +336,6 @@ function onPointerMove( event ) {
 function animate() {
 
     requestAnimationFrame( animate );
-
     render();
     stats.update();
 
@@ -358,10 +358,10 @@ function render() {
     birdUniforms[ 'time' ].value = now;
     birdUniforms[ 'delta' ].value = delta;
     
-    velocityUniforms[ 'predator' ].value.set( 0.5 * mouseX / windowHalfX, - 0.5 * mouseY / windowHalfY, 0 );
+    velocityUniforms[ 'target' ].value.set( 0.5 * mouseX / windowHalfX, - 0.5 * mouseY / windowHalfY, 0 );
     
-    mouseX = 10000;
-    mouseY = 10000;
+    // mouseX = 10000;
+    // mouseY = 10000;
     
     gpuCompute.compute();
 

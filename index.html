@@ -57,7 +57,7 @@
 			uniform float alignmentDistance; // 40
 			uniform float cohesionDistance; //
 			uniform float freedomFactor;
-			uniform vec3 predator;
+			uniform vec3 target;
 
 			const float width = resolution.x;
 			const float height = resolution.y;
@@ -109,20 +109,20 @@
 
 				float limit = SPEED_LIMIT;
 
-				dir = predator * UPPER_BOUNDS - selfPosition;
+				dir = target * UPPER_BOUNDS - selfPosition;
 				dir.z = 0.;
 				// dir.z *= 0.6;
 				dist = length( dir );
 				distSquared = dist * dist;
 
-				float preyRadius = 150.0;
-				float preyRadiusSq = preyRadius * preyRadius;
+				float tgtRadius = 150.0;
+				float tgtRadiusSq = tgtRadius * tgtRadius;
 
 
-				// move birds away from predator
-				if ( dist < preyRadius ) {
+				// move birds away from target
+				if ( dist < tgtRadius ) {
 
-					f = ( distSquared / preyRadiusSq - 1.0 ) * delta * 100.;
+					f = ( distSquared / tgtRadiusSq - 1.0 ) * delta * 100.;
 					velocity -= normalize( dir ) * f;
 					limit += 5.0;
 				}
