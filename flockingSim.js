@@ -123,6 +123,9 @@ let positionUniforms;
 let velocityUniforms;
 let birdUniforms;
 
+let targetClock = 0; //agents will lose interest over time 
+let frames = 0;
+
 let renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
 
 init();
@@ -154,7 +157,7 @@ function init() {
 
     container.style.touchAction = 'none';
     container.addEventListener( 'pointermove', onPointerMove );
-
+    container.addEventListener( 'click', onClick );
     //
 
     window.addEventListener( 'resize', onWindowResize );
@@ -327,10 +330,14 @@ function onPointerMove( event ) {
 
     mouseX = event.clientX - windowHalfX;
     mouseY = event.clientY - windowHalfY;
-    console.log(mouseX,mouseY);
+    targetClock = 0; //restart clock
     
 }
 
+function onClick( event ) { //reset mouse location
+    mouseX = 10000;
+    mouseY = 10000;    
+}
 //
 
 function animate() {
@@ -346,6 +353,7 @@ function animate() {
 function render() {
     
     const now = performance.now();
+    
     let delta = ( now - last ) / 1000;
     
     if ( delta > 1 ) delta = 1; // safety cap on large deltas
@@ -360,8 +368,14 @@ function render() {
     
     velocityUniforms[ 'target' ].value.set( 0.5 * mouseX / windowHalfX, - 0.5 * mouseY / windowHalfY, 0 );
     
-    // mouseX = 10000;
-    // mouseY = 10000;
+    
+    if (targetClock > 5){//birds lose interest after 5 seconds
+        mouseX = 10000;
+        mouseY = 10000;
+    }
+
+    targetClock+=delta;
+
     
     gpuCompute.compute();
 
@@ -374,7 +388,6 @@ function render() {
     // renderer.setRenderTarget( renderTarget );
     // renderer.render( scene, camera );
     // renderer.setRenderTarget( null );
-
+    frames = 0;
     renderer.render( scene, camera );
-
 }
