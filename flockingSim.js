@@ -136,7 +136,7 @@ init();
 animate();
 
 function init() {
-    video.play();
+    // video.play();
     container = document.createElement( 'div' );
     document.body.appendChild( container );
 
@@ -147,8 +147,8 @@ function init() {
     const videoTexture = new THREE.VideoTexture(video);
     videoTexture.needsUpdate = true;
 
-    // scene.background = new THREE.Color( 0xffffff );
-    scene.background = videoTexture;
+    scene.background = new THREE.Color( 0xffffff );
+    // scene.background = videoTexture;
     scene.fog = new THREE.Fog( 0xffffff, 100, 1000 );
 
     
