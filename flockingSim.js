@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-
 import Stats from 'stats'; //a small clickable div to display frame rate in the corner 
 import { GUI } from 'gui';
 
@@ -135,19 +134,21 @@ function init() {
 
     container = document.createElement( 'div' );
     document.body.appendChild( container );
+    container.appendChild(video);
 
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 150, 3000 );
     camera.position.z = 350;
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color( 0xffffff );
+    // scene.background = null;
     scene.fog = new THREE.Fog( 0xffffff, 100, 1000 );
 
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer( { alpha: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     container.appendChild( renderer.domElement );
-
+    renderer.setClearColor( 0x000000, 0 ); // the default
     initComputeRenderer();
 
 
