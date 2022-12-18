@@ -5,7 +5,7 @@ import { GUI } from 'gui';
 import { GPUComputationRenderer } from 'compute';
 
 /* TEXTURE WIDTH FOR SIMULATION */
-const WIDTH = 100;
+const WIDTH = 50;
 
 const BIRDS = WIDTH * WIDTH;
 
@@ -126,29 +126,37 @@ let targetClock = 0; //agents will lose interest over time
 let frames = 0;
 
 let renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
+let video = document.getElementById('video');
+
+// video.onloadeddata = function () {
+//     video.play();
+// };
 
 init();
 animate();
 
 function init() {
-
+    video.play();
     container = document.createElement( 'div' );
     document.body.appendChild( container );
-    container.appendChild(video);
 
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 150, 3000 );
     camera.position.z = 350;
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xffffff );
-    // scene.background = null;
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.needsUpdate = true;
+
+    // scene.background = new THREE.Color( 0xffffff );
+    scene.background = videoTexture;
     scene.fog = new THREE.Fog( 0xffffff, 100, 1000 );
 
-    renderer = new THREE.WebGLRenderer( { alpha: true } );
+    
+    renderer = new THREE.WebGLRenderer( );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     container.appendChild( renderer.domElement );
-    renderer.setClearColor( 0x000000, 0 ); // the default
+    // renderer.setClearColor( 0x000000, 0 ); // the default
     initComputeRenderer();
 
 
@@ -346,7 +354,7 @@ function animate() {
     requestAnimationFrame( animate );
     render();
     stats.update();
-
+    videoTexture.needsUpdate = true;
 }
 
 

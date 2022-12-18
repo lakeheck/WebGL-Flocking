@@ -15,13 +15,13 @@
 			}
 		</style>
 	</head>
+	<video id="video" playsinline webkit-playsinline muted loop autoplay width="320" height="240" src="/img/Malformed - Lake Heckaman - Banner.m4v" style="display: none;"></video>
 	<body>
 
 		<div id="info">
 			<a href="http://www.lakeheckaman.com" target="_blank" rel="noopener">by lake heckaman</a><br/>
 			move mouse to interact
 		</div>
-
 		<!-- shader for bird's position -->
 		<script id="fragmentShaderPosition" type="x-shader/x-fragment">
 
@@ -209,7 +209,7 @@
 
 
 				// this make tends to fly around than down or up
-				if (velocity.y > 0.) velocity.y *= (1. - 0.2 * delta);
+				//if (velocity.y > 0.) velocity.y *= (1. - 0.2 * delta);
 
 				// Speed Limits
 				if ( length( velocity ) > limit ) {
